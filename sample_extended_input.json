@@ -1,0 +1,176 @@
+{
+    "allocation_date": "2026-02-21",
+    "warehouse": {
+        "lat": 12.9716,
+        "lng": 77.5946
+    },
+    "drivers": [
+        {
+            "id": "driver_001",
+            "name": "Raju",
+            "vehicle_capacity_kg": 150,
+            "preferred_language": "en",
+            "experience_years": 12,
+            "health_score": 8.5,
+            "night_vision_impairment": false,
+            "fatigue_level": 3.2,
+            "recent_stress_level": 4.0,
+            "age": 34,
+            "vehicle_type_extended": "diesel",
+            "shift_type": "day",
+            "preferred_location_zone": "Koramangala",
+            "circadian_penalty_index": 0.1,
+            "monotony_index": 0.3,
+            "recovery_deficit_score": 1.5,
+            "gender": "male"
+        },
+        {
+            "id": "driver_002",
+            "name": "Priya",
+            "vehicle_capacity_kg": 120,
+            "preferred_language": "ta",
+            "experience_years": 5,
+            "health_score": 9.0,
+            "night_vision_impairment": false,
+            "fatigue_level": 2.0,
+            "recent_stress_level": 3.5,
+            "age": 28,
+            "vehicle_type_extended": "EV",
+            "shift_type": "day",
+            "preferred_location_zone": "Indiranagar",
+            "circadian_penalty_index": 0.05,
+            "monotony_index": 0.2,
+            "recovery_deficit_score": 0.5,
+            "gender": "female"
+        },
+        {
+            "id": "driver_003",
+            "name": "Kumar",
+            "vehicle_capacity_kg": 180,
+            "preferred_language": "en",
+            "experience_years": 20,
+            "health_score": 6.5,
+            "night_vision_impairment": true,
+            "fatigue_level": 6.8,
+            "recent_stress_level": 7.5,
+            "age": 52,
+            "vehicle_type_extended": "petrol",
+            "shift_type": "night",
+            "preferred_location_zone": "Whitefield",
+            "circadian_penalty_index": 0.7,
+            "monotony_index": 0.8,
+            "recovery_deficit_score": 8.2,
+            "gender": "male"
+        },
+        {
+            "id": "driver_004",
+            "name": "Lakshmi",
+            "vehicle_capacity_kg": 100,
+            "preferred_language": "hi",
+            "gender": "female"
+        },
+        {
+            "id": "driver_005",
+            "name": "Arjun",
+            "vehicle_capacity_kg": 160,
+            "preferred_language": "te",
+            "experience_years": 8,
+            "fatigue_level": 4.5,
+            "age": 38,
+            "shift_type": "day",
+            "gender": "male"
+        }
+    ],
+    "packages": [
+        {
+            "id": "pkg_001",
+            "weight_kg": 2.5,
+            "fragility_level": 3,
+            "address": "4A, Ruby Apartment, 3rd Main Road, Koramangala",
+            "latitude": 12.9352,
+            "longitude": 77.6245,
+            "priority": "NORMAL"
+        },
+        {
+            "id": "pkg_002",
+            "weight_kg": 8.0,
+            "fragility_level": 2,
+            "address": "No. 12, 2nd Cross Street, Indiranagar",
+            "latitude": 12.9716,
+            "longitude": 77.6411,
+            "priority": "HIGH"
+        },
+        {
+            "id": "pkg_003",
+            "weight_kg": 1.5,
+            "fragility_level": 1,
+            "address": "45, Brigade Road, Ashok Nagar",
+            "latitude": 12.9719,
+            "longitude": 77.6074,
+            "priority": "NORMAL"
+        },
+        {
+            "id": "pkg_004",
+            "weight_kg": 5.0,
+            "fragility_level": 4,
+            "address": "78, MG Road, Near Trinity Metro",
+            "latitude": 12.9756,
+            "longitude": 77.6066,
+            "priority": "EXPRESS"
+        },
+        {
+            "id": "pkg_005",
+            "weight_kg": 3.2,
+            "fragility_level": 2,
+            "address": "23, Residency Road, Richmond Circle",
+            "latitude": 12.9682,
+            "longitude": 77.5973,
+            "priority": "NORMAL"
+        },
+        {
+            "id": "pkg_006",
+            "weight_kg": 6.8,
+            "fragility_level": 3,
+            "address": "101, Commercial Street, Shivaji Nagar",
+            "latitude": 12.9833,
+            "longitude": 77.6072,
+            "priority": "HIGH"
+        },
+        {
+            "id": "pkg_007",
+            "weight_kg": 2.1,
+            "fragility_level": 1,
+            "address": "55, Cunningham Road, Vasanth Nagar",
+            "latitude": 12.9927,
+            "longitude": 77.5855,
+            "priority": "NORMAL"
+        },
+        {
+            "id": "pkg_008",
+            "weight_kg": 4.5,
+            "fragility_level": 5,
+            "address": "88, Lavelle Road, Langford Town",
+            "latitude": 12.9644,
+            "longitude": 77.5957,
+            "priority": "EXPRESS"
+        },
+        {
+            "id": "pkg_009",
+            "weight_kg": 7.2,
+            "fragility_level": 2,
+            "address": "32, Vittal Mallya Road, Cubbon Park",
+            "latitude": 12.9738,
+            "longitude": 77.5956,
+            "priority": "NORMAL"
+        },
+        {
+            "id": "pkg_010",
+            "weight_kg": 1.8,
+            "fragility_level": 1,
+            "address": "67, Infantry Road, Shivaji Nagar",
+            "latitude": 12.9864,
+            "longitude": 77.5961,
+            "priority": "HIGH"
+        }
+    ]
+}

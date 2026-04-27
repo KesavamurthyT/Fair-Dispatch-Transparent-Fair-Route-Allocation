@@ -1,0 +1,46 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.12.3, pytest-9.0.2, pluggy-1.6.0 -- C:\Users\mudha\AppData\Local\Programs\Python\Python312\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\mudha\OneDrive\Desktop\CODEATHON\fair-dispatch-system
+configfile: pytest.ini
+plugins: anyio-4.12.0, Faker-40.1.2, langsmith-0.5.1, asyncio-1.3.0, cov-7.0.0, xdist-3.8.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=session, asyncio_default_test_loop_scope=function
+collecting ... collected 21 items
+
+tests/test_cvrp_solver.py::TestCVRPSolverBasic::test_solve_small_instance PASSED [  4%]
+tests/test_cvrp_solver.py::TestCVRPSolverBasic::test_capacity_constraint_respected PASSED [  9%]
+tests/test_cvrp_solver.py::TestCVRPSolverBasic::test_empty_input PASSED  [ 14%]
+tests/test_cvrp_solver.py::TestCVRPSolverBasic::test_single_vehicle_single_node PASSED [ 19%]
+tests/test_cvrp_solver.py::TestCVRPEVConstraints::test_ev_range_respected PASSED [ 23%]
+tests/test_cvrp_solver.py::TestCVRPFairness::test_fairness_reduces_gini PASSED [ 28%]
+tests/test_cvrp_solver.py::TestCVRPGreedyFallback::test_greedy_fallback_produces_valid_solution PASSED [ 33%]
+tests/test_cvrp_solver.py::TestCVRPScaleEdgeCases::test_more_packages_than_drivers PASSED [ 38%]
+tests/test_cvrp_solver.py::TestCVRPScaleEdgeCases::test_more_drivers_than_packages PASSED [ 42%]
+tests/test_safe_model_storage.py::TestNoPickleInProduction::test_no_pickle_loads_in_services PASSED [ 47%]
+tests/test_safe_model_storage.py::TestNoPickleInProduction::test_no_pickle_dumps_in_services PASSED [ 52%]
+tests/test_safe_model_storage.py::TestXGBoostSafeStorage::test_save_and_load_model_json PASSED [ 57%]
+tests/test_safe_model_storage.py::TestXGBoostSafeStorage::test_driver_effort_model_has_no_pickle_column PASSED [ 61%]
+tests/test_artifact_store.py::TestArtifactStoreUnit::test_put_and_get_dense_matrix PASSED [ 66%]
+tests/test_artifact_store.py::TestArtifactStoreUnit::test_put_and_get_integer_matrix PASSED [ 71%]
+tests/test_artifact_store.py::TestArtifactStoreUnit::test_put_and_get_large_matrix PASSED [ 76%]
+tests/test_artifact_store.py::TestArtifactStoreUnit::test_get_nonexistent_key_raises PASSED [ 80%]
+tests/test_artifact_store.py::TestArtifactStoreUnit::test_delete_keys PASSED [ 85%]
+tests/test_artifact_store.py::TestArtifactStoreUnit::test_unique_keys PASSED [ 90%]
+tests/test_artifact_store.py::TestArtifactStoreUnit::test_1d_array PASSED [ 95%]
+tests/test_artifact_store.py::TestNoPickleSafety::test_no_pickle_import PASSED [100%]
+
+============================== warnings summary ===============================
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\pydantic\_internal\_fields.py:149
+  C:\Users\mudha\AppData\Local\Programs\Python\Python312\Lib\site-packages\pydantic\_internal\_fields.py:149: UserWarning: Field "model_storage_dir" has conflict with protected namespace "model_".
+  
+  You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ('settings_',)`.
+    warnings.warn(
+
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\pydantic\_internal\_fields.py:149
+  C:\Users\mudha\AppData\Local\Programs\Python\Python312\Lib\site-packages\pydantic\_internal\_fields.py:149: UserWarning: Field "model_version" has conflict with protected namespace "model_".
+  
+  You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+================= 21 passed, 2 warnings in 226.39s (0:03:46) ==================

@@ -1,0 +1,88 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.12.3, pytest-9.0.2, pluggy-1.6.0 -- C:\Users\mudha\AppData\Local\Programs\Python\Python312\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\mudha\OneDrive\Desktop\CODEATHON\fair-dispatch-system
+configfile: pytest.ini
+plugins: anyio-4.12.0, Faker-40.1.2, langsmith-0.5.1, asyncio-1.3.0, cov-7.0.0, xdist-3.8.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=session, asyncio_default_test_loop_scope=function
+collecting ... collected 18 items
+
+tests/test_hardening_features.py::TestDeterministicSeed::test_same_seed_produces_same_assignments FAILED [  5%]
+tests/test_hardening_features.py::TestDeterministicSeed::test_cvrp_random_seed_constant_is_set PASSED [ 11%]
+tests/test_hardening_features.py::TestDeterministicSeed::test_seed_overridable_via_env PASSED [ 16%]
+tests/test_hardening_features.py::TestFairnessMetadata::test_solution_has_fairness_fields PASSED [ 22%]
+tests/test_hardening_features.py::TestFairnessMetadata::test_solve_populates_fairness_metadata FAILED [ 27%]
+tests/test_hardening_features.py::TestFairnessMetadata::test_fairness_log_uses_percent_format FAILED [ 33%]
+tests/test_hardening_features.py::TestFairnessMetadata::test_max_fairness_iterations_enforced FAILED [ 38%]
+tests/test_hardening_features.py::TestArtifactCleanup::test_keys_are_deleted_after_allocation PASSED [ 44%]
+tests/test_hardening_features.py::TestArtifactCleanup::test_keys_cleaned_up_even_on_exception PASSED [ 50%]
+tests/test_hardening_features.py::TestArtifactCleanup::test_worker_finally_block_exists PASSED [ 55%]
+tests/test_hardening_features.py::TestIdempotencyKey::test_allocation_run_has_idempotency_key_column PASSED [ 61%]
+tests/test_hardening_features.py::TestIdempotencyKey::test_idempotency_key_is_unique PASSED [ 66%]
+tests/test_hardening_features.py::TestIdempotencyKey::test_idempotency_key_is_nullable PASSED [ 72%]
+tests/test_hardening_features.py::TestIdempotencyKey::test_idempotency_check_in_api_source PASSED [ 77%]
+tests/test_hardening_features.py::TestModelVersionTracking::test_allocation_run_has_model_version_used_column PASSED [ 83%]
+tests/test_hardening_features.py::TestModelVersionTracking::test_model_version_used_is_nullable PASSED [ 88%]
+tests/test_hardening_features.py::TestModelVersionTracking::test_model_version_recorded_in_runner_source PASSED [ 94%]
+tests/test_hardening_features.py::TestModelVersionTracking::test_status_endpoint_returns_model_version PASSED [100%]
+
+================================== FAILURES ===================================
+_______ TestDeterministicSeed.test_same_seed_produces_same_assignments ________
+tests\test_hardening_features.py:54: in test_same_seed_produces_same_assignments
+    sol1 = s1.solve()
+           ^^^^^^^^^^
+app\solver\cvrp_solver.py:191: in solve
+    solution = self._solve_iteration(
+app\solver\cvrp_solver.py:346: in _solve_iteration
+    search_params.random_seed = CVRP_RANDOM_SEED   # Fix 1: deterministic
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: Protocol message RoutingSearchParameters has no "random_seed" field.
+_________ TestFairnessMetadata.test_solve_populates_fairness_metadata _________
+tests\test_hardening_features.py:120: in test_solve_populates_fairness_metadata
+    solution = solver.solve()
+               ^^^^^^^^^^^^^^
+app\solver\cvrp_solver.py:191: in solve
+    solution = self._solve_iteration(
+app\solver\cvrp_solver.py:346: in _solve_iteration
+    search_params.random_seed = CVRP_RANDOM_SEED   # Fix 1: deterministic
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: Protocol message RoutingSearchParameters has no "random_seed" field.
+_________ TestFairnessMetadata.test_fairness_log_uses_percent_format __________
+tests\test_hardening_features.py:139: in test_fairness_log_uses_percent_format
+    solver.solve()
+app\solver\cvrp_solver.py:191: in solve
+    solution = self._solve_iteration(
+app\solver\cvrp_solver.py:346: in _solve_iteration
+    search_params.random_seed = CVRP_RANDOM_SEED   # Fix 1: deterministic
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: Protocol message RoutingSearchParameters has no "random_seed" field.
+_________ TestFairnessMetadata.test_max_fairness_iterations_enforced __________
+tests\test_hardening_features.py:164: in test_max_fairness_iterations_enforced
+    solution = solver.solve()
+               ^^^^^^^^^^^^^^
+app\solver\cvrp_solver.py:191: in solve
+    solution = self._solve_iteration(
+app\solver\cvrp_solver.py:346: in _solve_iteration
+    search_params.random_seed = CVRP_RANDOM_SEED   # Fix 1: deterministic
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: Protocol message RoutingSearchParameters has no "random_seed" field.
+============================== warnings summary ===============================
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\pydantic\_internal\_fields.py:149
+  C:\Users\mudha\AppData\Local\Programs\Python\Python312\Lib\site-packages\pydantic\_internal\_fields.py:149: UserWarning: Field "model_storage_dir" has conflict with protected namespace "model_".
+  
+  You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ('settings_',)`.
+    warnings.warn(
+
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\pydantic\_internal\_fields.py:149
+  C:\Users\mudha\AppData\Local\Programs\Python\Python312\Lib\site-packages\pydantic\_internal\_fields.py:149: UserWarning: Field "model_version" has conflict with protected namespace "model_".
+  
+  You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_hardening_features.py::TestDeterministicSeed::test_same_seed_produces_same_assignments - AttributeError: Protocol message RoutingSearchParameters has no "random_seed" field.
+FAILED tests/test_hardening_features.py::TestFairnessMetadata::test_solve_populates_fairness_metadata - AttributeError: Protocol message RoutingSearchParameters has no "random_seed" field.
+FAILED tests/test_hardening_features.py::TestFairnessMetadata::test_fairness_log_uses_percent_format - AttributeError: Protocol message RoutingSearchParameters has no "random_seed" field.
+FAILED tests/test_hardening_features.py::TestFairnessMetadata::test_max_fairness_iterations_enforced - AttributeError: Protocol message RoutingSearchParameters has no "random_seed" field.
+================== 4 failed, 14 passed, 2 warnings in 1.25s ===================

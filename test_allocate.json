@@ -1,0 +1,13 @@
+﻿{
+    "allocation_date": "2026-02-05",
+    "warehouse": {"lat": 12.9716, "lng": 77.5946},
+    "packages": [
+        {"id": "pkg_001", "weight_kg": 2.5, "fragility_level": 3, "address": "123 Main St", "latitude": 12.97, "longitude": 77.60, "priority": "NORMAL"},
+        {"id": "pkg_002", "weight_kg": 1.0, "fragility_level": 1, "address": "456 Oak Ave", "latitude": 12.98, "longitude": 77.61, "priority": "HIGH"},
+        {"id": "pkg_003", "weight_kg": 3.0, "fragility_level": 2, "address": "789 Pine Rd", "latitude": 12.96, "longitude": 77.59, "priority": "NORMAL"}
+    ],
+    "drivers": [
+        {"id": "driver_001", "name": "Raju", "vehicle_capacity_kg": 150, "preferred_language": "en"},
+        {"id": "driver_002", "name": "Kumar", "vehicle_capacity_kg": 200, "preferred_language": "ta"}
+    ]
+}

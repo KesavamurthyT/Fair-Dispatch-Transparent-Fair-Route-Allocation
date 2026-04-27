@@ -1,0 +1,472 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.12.3, pytest-9.0.2, pluggy-1.6.0 -- C:\Users\mudha\AppData\Local\Programs\Python\Python312\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\mudha\OneDrive\Desktop\CODEATHON\fair-dispatch-system
+configfile: pytest.ini
+plugins: anyio-4.12.0, Faker-40.1.2, langsmith-0.5.1, asyncio-1.3.0, cov-7.0.0, xdist-3.8.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=session, asyncio_default_test_loop_scope=function
+collecting ... collected 21 items
+
+tests/test_cvrp_solver.py::TestCVRPSolverBasic::test_solve_small_instance PASSED [  4%]
+tests/test_cvrp_solver.py::TestCVRPSolverBasic::test_capacity_constraint_respected PASSED [  9%]
+tests/test_cvrp_solver.py::TestCVRPSolverBasic::test_empty_input PASSED  [ 14%]
+tests/test_cvrp_solver.py::TestCVRPSolverBasic::test_single_vehicle_single_node PASSED [ 19%]
+tests/test_cvrp_solver.py::TestCVRPEVConstraints::test_ev_range_respected PASSED [ 23%]
+tests/test_cvrp_solver.py::TestCVRPFairness::test_fairness_reduces_gini PASSED [ 28%]
+tests/test_cvrp_solver.py::TestCVRPGreedyFallback::test_greedy_fallback_produces_valid_solution PASSED [ 33%]
+tests/test_cvrp_solver.py::TestCVRPScaleEdgeCases::test_more_packages_than_drivers PASSED [ 38%]
+tests/test_cvrp_solver.py::TestCVRPScaleEdgeCases::test_more_drivers_than_packages PASSED [ 42%]
+tests/test_safe_model_storage.py::TestNoPickleInProduction::test_no_pickle_loads_in_services FAILED [ 47%]
+tests/test_safe_model_storage.py::TestNoPickleInProduction::test_no_pickle_dumps_in_services FAILED [ 52%]
+tests/test_safe_model_storage.py::TestXGBoostSafeStorage::test_save_and_load_model_json PASSED [ 57%]
+tests/test_safe_model_storage.py::TestXGBoostSafeStorage::test_driver_effort_model_has_no_pickle_column PASSED [ 61%]
+tests/test_artifact_store.py::TestArtifactStoreUnit::test_put_and_get_dense_matrix FAILED [ 66%]
+tests/test_artifact_store.py::TestArtifactStoreUnit::test_put_and_get_integer_matrix FAILED [ 71%]
+tests/test_artifact_store.py::TestArtifactStoreUnit::test_put_and_get_large_matrix FAILED [ 76%]
+tests/test_artifact_store.py::TestArtifactStoreUnit::test_get_nonexistent_key_raises FAILED [ 80%]
+tests/test_artifact_store.py::TestArtifactStoreUnit::test_delete_keys FAILED [ 85%]
+tests/test_artifact_store.py::TestArtifactStoreUnit::test_unique_keys FAILED [ 90%]
+tests/test_artifact_store.py::TestArtifactStoreUnit::test_1d_array FAILED [ 95%]
+tests/test_artifact_store.py::TestNoPickleSafety::test_no_pickle_import FAILED [100%]
+
+================================== FAILURES ===================================
+__________ TestNoPickleInProduction.test_no_pickle_loads_in_services __________
+
+self = <tests.test_safe_model_storage.TestNoPickleInProduction object at 0x000001EA46059D00>
+
+    def test_no_pickle_loads_in_services(self):
+        """No pickle.loads in app/services (the RCE vulnerability)."""
+        for directory in self.PRODUCTION_DIRS:
+            for filepath in self._get_python_files(directory):
+                with open(filepath, "r", encoding="utf-8") as f:
+                    content = f.read()
+    
+                # Allow 'import pickle' only if there's no .loads or .dumps
+                if "pickle.loads" in content:
+>                   pytest.fail(
+                        f"SECURITY: pickle.loads found in {filepath}. "
+                        f"This is an RCE vulnerability!"
+                    )
+E                   Failed: SECURITY: pickle.loads found in C:\Users\mudha\OneDrive\Desktop\CODEATHON\fair-dispatch-system\app/services\learning_agent.py. This is an RCE vulnerability!
+
+tests\test_safe_model_storage.py:47: Failed
+__________ TestNoPickleInProduction.test_no_pickle_dumps_in_services __________
+
+self = <tests.test_safe_model_storage.TestNoPickleInProduction object at 0x000001EA46059FD0>
+
+    def test_no_pickle_dumps_in_services(self):
+        """No pickle.dumps in production code."""
+        for directory in self.PRODUCTION_DIRS:
+            for filepath in self._get_python_files(directory):
+                with open(filepath, "r", encoding="utf-8") as f:
+                    content = f.read()
+    
+                if "pickle.dumps" in content:
+>                   pytest.fail(
+                        f"SECURITY: pickle.dumps found in {filepath}. "
+                        f"Use safe serialization instead!"
+                    )
+E                   Failed: SECURITY: pickle.dumps found in C:\Users\mudha\OneDrive\Desktop\CODEATHON\fair-dispatch-system\app/services\learning_agent.py. Use safe serialization instead!
+
+tests\test_safe_model_storage.py:60: Failed
+_____________ TestArtifactStoreUnit.test_put_and_get_dense_matrix _____________
+
+self = <tests.test_artifact_store.TestArtifactStoreUnit object at 0x000001EA46058230>
+
+    def test_put_and_get_dense_matrix(self):
+        """Round-trip: put dense matrix \u2192 get same matrix back."""
+>       store = self._make_store()
+                ^^^^^^^^^^^^^^^^^^
+
+tests\test_artifact_store.py:30: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <tests.test_artifact_store.TestArtifactStoreUnit object at 0x000001EA46058230>
+
+    def _make_store(self):
+        """Create an artifact store with a mock Redis client."""
+>       from app.utils.artifact_store import ArtifactStore
+
+tests\test_artifact_store.py:19: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    """
+    Redis-backed artifact store for large intermediate data.
+    
+    Stores large arrays (effort matrices, distance matrices) in Redis with TTL,
+    returning lightweight string keys for LangGraph state references.
+    
+    Serialization uses numpy's safe binary format (np.save/np.load) ù
+    NO pickle is used anywhere in this module.
+    
+    Usage:
+        from app.utils.artifact_store import artifact_store
+    
+        key = artifact_store.put_matrix(effort_matrix, ttl_seconds=3600)
+        matrix = artifact_store.get_matrix(key)
+        artifact_store.delete_keys(key)
+    """
+    
+    import io
+    import logging
+    from typing import Optional
+    from uuid import uuid4
+    
+    import numpy as np
+>   import redis as redis_lib
+E   ModuleNotFoundError: No module named 'redis'
+
+app\utils\artifact_store.py:24: ModuleNotFoundError
+____________ TestArtifactStoreUnit.test_put_and_get_integer_matrix ____________
+
+self = <tests.test_artifact_store.TestArtifactStoreUnit object at 0x000001EA4605BA10>
+
+    def test_put_and_get_integer_matrix(self):
+        """Should handle integer arrays."""
+>       store = self._make_store()
+                ^^^^^^^^^^^^^^^^^^
+
+tests\test_artifact_store.py:43: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <tests.test_artifact_store.TestArtifactStoreUnit object at 0x000001EA4605BA10>
+
+    def _make_store(self):
+        """Create an artifact store with a mock Redis client."""
+>       from app.utils.artifact_store import ArtifactStore
+
+tests\test_artifact_store.py:19: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    """
+    Redis-backed artifact store for large intermediate data.
+    
+    Stores large arrays (effort matrices, distance matrices) in Redis with TTL,
+    returning lightweight string keys for LangGraph state references.
+    
+    Serialization uses numpy's safe binary format (np.save/np.load) ù
+    NO pickle is used anywhere in this module.
+    
+    Usage:
+        from app.utils.artifact_store import artifact_store
+    
+        key = artifact_store.put_matrix(effort_matrix, ttl_seconds=3600)
+        matrix = artifact_store.get_matrix(key)
+        artifact_store.delete_keys(key)
+    """
+    
+    import io
+    import logging
+    from typing import Optional
+    from uuid import uuid4
+    
+    import numpy as np
+>   import redis as redis_lib
+E   ModuleNotFoundError: No module named 'redis'
+
+app\utils\artifact_store.py:24: ModuleNotFoundError
+_____________ TestArtifactStoreUnit.test_put_and_get_large_matrix _____________
+
+self = <tests.test_artifact_store.TestArtifactStoreUnit object at 0x000001EA4609F0B0>
+
+    def test_put_and_get_large_matrix(self):
+        """Should handle large matrices (2000 x 500)."""
+>       store = self._make_store()
+                ^^^^^^^^^^^^^^^^^^
+
+tests\test_artifact_store.py:54: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <tests.test_artifact_store.TestArtifactStoreUnit object at 0x000001EA4609F0B0>
+
+    def _make_store(self):
+        """Create an artifact store with a mock Redis client."""
+>       from app.utils.artifact_store import ArtifactStore
+
+tests\test_artifact_store.py:19: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    """
+    Redis-backed artifact store for large intermediate data.
+    
+    Stores large arrays (effort matrices, distance matrices) in Redis with TTL,
+    returning lightweight string keys for LangGraph state references.
+    
+    Serialization uses numpy's safe binary format (np.save/np.load) ù
+    NO pickle is used anywhere in this module.
+    
+    Usage:
+        from app.utils.artifact_store import artifact_store
+    
+        key = artifact_store.put_matrix(effort_matrix, ttl_seconds=3600)
+        matrix = artifact_store.get_matrix(key)
+        artifact_store.delete_keys(key)
+    """
+    
+    import io
+    import logging
+    from typing import Optional
+    from uuid import uuid4
+    
+    import numpy as np
+>   import redis as redis_lib
+E   ModuleNotFoundError: No module named 'redis'
+
+app\utils\artifact_store.py:24: ModuleNotFoundError
+____________ TestArtifactStoreUnit.test_get_nonexistent_key_raises ____________
+
+self = <tests.test_artifact_store.TestArtifactStoreUnit object at 0x000001EA4609F080>
+
+    def test_get_nonexistent_key_raises(self):
+        """Getting a missing key should raise KeyError."""
+>       store = self._make_store()
+                ^^^^^^^^^^^^^^^^^^
+
+tests\test_artifact_store.py:64: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <tests.test_artifact_store.TestArtifactStoreUnit object at 0x000001EA4609F080>
+
+    def _make_store(self):
+        """Create an artifact store with a mock Redis client."""
+>       from app.utils.artifact_store import ArtifactStore
+
+tests\test_artifact_store.py:19: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    """
+    Redis-backed artifact store for large intermediate data.
+    
+    Stores large arrays (effort matrices, distance matrices) in Redis with TTL,
+    returning lightweight string keys for LangGraph state references.
+    
+    Serialization uses numpy's safe binary format (np.save/np.load) ù
+    NO pickle is used anywhere in this module.
+    
+    Usage:
+        from app.utils.artifact_store import artifact_store
+    
+        key = artifact_store.put_matrix(effort_matrix, ttl_seconds=3600)
+        matrix = artifact_store.get_matrix(key)
+        artifact_store.delete_keys(key)
+    """
+    
+    import io
+    import logging
+    from typing import Optional
+    from uuid import uuid4
+    
+    import numpy as np
+>   import redis as redis_lib
+E   ModuleNotFoundError: No module named 'redis'
+
+app\utils\artifact_store.py:24: ModuleNotFoundError
+___________________ TestArtifactStoreUnit.test_delete_keys ____________________
+
+self = <tests.test_artifact_store.TestArtifactStoreUnit object at 0x000001EA4609F830>
+
+    def test_delete_keys(self):
+        """Deleting keys should remove them from the store."""
+>       store = self._make_store()
+                ^^^^^^^^^^^^^^^^^^
+
+tests\test_artifact_store.py:71: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <tests.test_artifact_store.TestArtifactStoreUnit object at 0x000001EA4609F830>
+
+    def _make_store(self):
+        """Create an artifact store with a mock Redis client."""
+>       from app.utils.artifact_store import ArtifactStore
+
+tests\test_artifact_store.py:19: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    """
+    Redis-backed artifact store for large intermediate data.
+    
+    Stores large arrays (effort matrices, distance matrices) in Redis with TTL,
+    returning lightweight string keys for LangGraph state references.
+    
+    Serialization uses numpy's safe binary format (np.save/np.load) ù
+    NO pickle is used anywhere in this module.
+    
+    Usage:
+        from app.utils.artifact_store import artifact_store
+    
+        key = artifact_store.put_matrix(effort_matrix, ttl_seconds=3600)
+        matrix = artifact_store.get_matrix(key)
+        artifact_store.delete_keys(key)
+    """
+    
+    import io
+    import logging
+    from typing import Optional
+    from uuid import uuid4
+    
+    import numpy as np
+>   import redis as redis_lib
+E   ModuleNotFoundError: No module named 'redis'
+
+app\utils\artifact_store.py:24: ModuleNotFoundError
+___________________ TestArtifactStoreUnit.test_unique_keys ____________________
+
+self = <tests.test_artifact_store.TestArtifactStoreUnit object at 0x000001EA4609FB60>
+
+    def test_unique_keys(self):
+        """Successive puts should generate unique keys."""
+>       store = self._make_store()
+                ^^^^^^^^^^^^^^^^^^
+
+tests\test_artifact_store.py:88: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <tests.test_artifact_store.TestArtifactStoreUnit object at 0x000001EA4609FB60>
+
+    def _make_store(self):
+        """Create an artifact store with a mock Redis client."""
+>       from app.utils.artifact_store import ArtifactStore
+
+tests\test_artifact_store.py:19: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    """
+    Redis-backed artifact store for large intermediate data.
+    
+    Stores large arrays (effort matrices, distance matrices) in Redis with TTL,
+    returning lightweight string keys for LangGraph state references.
+    
+    Serialization uses numpy's safe binary format (np.save/np.load) ù
+    NO pickle is used anywhere in this module.
+    
+    Usage:
+        from app.utils.artifact_store import artifact_store
+    
+        key = artifact_store.put_matrix(effort_matrix, ttl_seconds=3600)
+        matrix = artifact_store.get_matrix(key)
+        artifact_store.delete_keys(key)
+    """
+    
+    import io
+    import logging
+    from typing import Optional
+    from uuid import uuid4
+    
+    import numpy as np
+>   import redis as redis_lib
+E   ModuleNotFoundError: No module named 'redis'
+
+app\utils\artifact_store.py:24: ModuleNotFoundError
+_____________________ TestArtifactStoreUnit.test_1d_array _____________________
+
+self = <tests.test_artifact_store.TestArtifactStoreUnit object at 0x000001EA4609FE90>
+
+    def test_1d_array(self):
+        """Should handle 1D vectors."""
+>       store = self._make_store()
+                ^^^^^^^^^^^^^^^^^^
+
+tests\test_artifact_store.py:98: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <tests.test_artifact_store.TestArtifactStoreUnit object at 0x000001EA4609FE90>
+
+    def _make_store(self):
+        """Create an artifact store with a mock Redis client."""
+>       from app.utils.artifact_store import ArtifactStore
+
+tests\test_artifact_store.py:19: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    """
+    Redis-backed artifact store for large intermediate data.
+    
+    Stores large arrays (effort matrices, distance matrices) in Redis with TTL,
+    returning lightweight string keys for LangGraph state references.
+    
+    Serialization uses numpy's safe binary format (np.save/np.load) ù
+    NO pickle is used anywhere in this module.
+    
+    Usage:
+        from app.utils.artifact_store import artifact_store
+    
+        key = artifact_store.put_matrix(effort_matrix, ttl_seconds=3600)
+        matrix = artifact_store.get_matrix(key)
+        artifact_store.delete_keys(key)
+    """
+    
+    import io
+    import logging
+    from typing import Optional
+    from uuid import uuid4
+    
+    import numpy as np
+>   import redis as redis_lib
+E   ModuleNotFoundError: No module named 'redis'
+
+app\utils\artifact_store.py:24: ModuleNotFoundError
+__________________ TestNoPickleSafety.test_no_pickle_import ___________________
+
+self = <tests.test_artifact_store.TestNoPickleSafety object at 0x000001EA4609F9E0>
+
+    def test_no_pickle_import(self):
+        """The artifact_store module should not import pickle."""
+        import importlib
+>       import app.utils.artifact_store as module
+
+tests\test_artifact_store.py:113: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    """
+    Redis-backed artifact store for large intermediate data.
+    
+    Stores large arrays (effort matrices, distance matrices) in Redis with TTL,
+    returning lightweight string keys for LangGraph state references.
+    
+    Serialization uses numpy's safe binary format (np.save/np.load) ù
+    NO pickle is used anywhere in this module.
+    
+    Usage:
+        from app.utils.artifact_store import artifact_store
+    
+        key = artifact_store.put_matrix(effort_matrix, ttl_seconds=3600)
+        matrix = artifact_store.get_matrix(key)
+        artifact_store.delete_keys(key)
+    """
+    
+    import io
+    import logging
+    from typing import Optional
+    from uuid import uuid4
+    
+    import numpy as np
+>   import redis as redis_lib
+E   ModuleNotFoundError: No module named 'redis'
+
+app\utils\artifact_store.py:24: ModuleNotFoundError
+============================== warnings summary ===============================
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\pydantic\_internal\_fields.py:149
+  C:\Users\mudha\AppData\Local\Programs\Python\Python312\Lib\site-packages\pydantic\_internal\_fields.py:149: UserWarning: Field "model_storage_dir" has conflict with protected namespace "model_".
+  
+  You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ('settings_',)`.
+    warnings.warn(
+
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\pydantic\_internal\_fields.py:149
+  C:\Users\mudha\AppData\Local\Programs\Python\Python312\Lib\site-packages\pydantic\_internal\_fields.py:149: UserWarning: Field "model_version" has conflict with protected namespace "model_".
+  
+  You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_safe_model_storage.py::TestNoPickleInProduction::test_no_pickle_loads_in_services - Failed: SECURITY: pickle.loads found in C:\Users\mudha\OneDrive\Desktop\CODEATHON\fair-dispatch-system\app/services\learning_agent.py. This is an RCE vulnerability!
+FAILED tests/test_safe_model_storage.py::TestNoPickleInProduction::test_no_pickle_dumps_in_services - Failed: SECURITY: pickle.dumps found in C:\Users\mudha\OneDrive\Desktop\CODEATHON\fair-dispatch-system\app/services\learning_agent.py. Use safe serialization instead!
+FAILED tests/test_artifact_store.py::TestArtifactStoreUnit::test_put_and_get_dense_matrix - ModuleNotFoundError: No module named 'redis'
+FAILED tests/test_artifact_store.py::TestArtifactStoreUnit::test_put_and_get_integer_matrix - ModuleNotFoundError: No module named 'redis'
+FAILED tests/test_artifact_store.py::TestArtifactStoreUnit::test_put_and_get_large_matrix - ModuleNotFoundError: No module named 'redis'
+FAILED tests/test_artifact_store.py::TestArtifactStoreUnit::test_get_nonexistent_key_raises - ModuleNotFoundError: No module named 'redis'
+FAILED tests/test_artifact_store.py::TestArtifactStoreUnit::test_delete_keys - ModuleNotFoundError: No module named 'redis'
+FAILED tests/test_artifact_store.py::TestArtifactStoreUnit::test_unique_keys - ModuleNotFoundError: No module named 'redis'
+FAILED tests/test_artifact_store.py::TestArtifactStoreUnit::test_1d_array - ModuleNotFoundError: No module named 'redis'
+FAILED tests/test_artifact_store.py::TestNoPickleSafety::test_no_pickle_import - ModuleNotFoundError: No module named 'redis'
+============ 10 failed, 11 passed, 2 warnings in 227.38s (0:03:47) ============

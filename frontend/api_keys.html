@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Key Management | Fair Dispatch System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0f1a;
+            --bg-secondary: #0d1929;
+            --bg-card: #0f1e2e;
+            --bg-card-hover: #132438;
+            --accent-primary: #00d4aa;
+            --accent-secondary: #00b894;
+            --accent-glow: rgba(0, 212, 170, 0.4);
+            --accent-soft: rgba(0, 212, 170, 0.08);
+            --text-primary: #ffffff;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border-primary: #1e3a5f;
+            --border-hover: #2a5a8f;
+            --status-success: #00d4aa;
+            --status-error: #ef4444;
+            --status-warning: #fbbf24;
+            --danger: #ef4444;
+            --danger-glow: rgba(239, 68, 68, 0.3);
+            --purple: #a78bfa;
+            --purple-glow: rgba(167, 139, 250, 0.3);
+            --blue: #60a5fa;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 30%, rgba(0, 212, 170, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(167, 139, 250, 0.03) 0%, transparent 50%);
+            animation: bgShift 20s ease-in-out infinite alternate;
+            z-index: -1;
+        }
+
+        @keyframes bgShift {
+            0% {
+                transform: translate(0, 0);
+            }
+
+            100% {
+                transform: translate(3%, 3%);
+            }
+        }
+
+        /* Header */
+        .header {
+            height: 64px;
+            background: rgba(13, 25, 41, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-primary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--purple) 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 16px var(--accent-glow);
+        }
+
+        .logo svg {
+            width: 22px;
+            height: 22px;
+            color: var(--bg-primary);
+        }
+
+        .header-title h1 {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .header-title .subtitle {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.25s ease;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+            color: var(--bg-primary);
+            box-shadow: 0 4px 20px var(--accent-glow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px var(--accent-glow);
+        }
+
+        .btn-secondary {
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-primary);
+            text-decoration: none;
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-card-hover);
+            color: var(--text-primary);
+            border-color: var(--accent-primary);
+        }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.25);
+            box-shadow: 0 4px 16px var(--danger-glow);
+        }
+
+        .btn-sm {
+            padding: 6px 14px;
+            font-size: 12px;
+            border-radius: 8px;
+        }
+
+        /* Main */
+        .main {
+            margin-top: 64px;
+            padding: 28px;
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-primary);
+            border-radius: 16px;
+            padding: 20px 24px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-primary), var(--purple));
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .stat-card:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-2px);
+        }
+
+        .stat-card:hover::before {
+            opacity: 1;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent-primary), var(--blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-value.muted {
+            background: none;
+            -webkit-text-fill-color: var(--text-muted);
+            color: var(--text-muted);
+        }
+
+        /* Card */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-primary);
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 28px;
+        }
+
+        .card-header {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--border-primary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-title {
+            font-size: 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-title svg {
+            width: 20px;
+            height: 20px;
+            color: var(--accent-primary);
+        }
+
+        .card-body {
+            padding: 0;
+        }
+
+        /* Generate section */
+        .generate-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-primary);
+            background: var(--accent-soft);
+        }
+
+        .generate-section input {
+            flex: 1;
+            padding: 10px 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .generate-section input:focus {
+            border-color: var(--accent-primary);
+        }
+
+        .generate-section input::placeholder {
+            color: var(--text-muted);
+        }
+
+        /* Table */
+        .keys-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .keys-table th {
+            padding: 12px 24px;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border-primary);
+            background: var(--bg-secondary);
+        }
+
+        .keys-table td {
+            padding: 16px 24px;
+            font-size: 14px;
+            border-bottom: 1px solid rgba(30, 58, 95, 0.4);
+            transition: background 0.15s;
+        }
+
+        .keys-table tr:hover td {
+            background: var(--bg-card-hover);
+        }
+
+        .keys-table tr {
+            cursor: pointer;
+        }
+
+        .key-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .key-prefix {
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 13px;
+            background: var(--bg-secondary);
+            padding: 4px 10px;
+            border-radius: 6px;
+            color: var(--accent-primary);
+            letter-spacing: 0.5px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-active {
+            background: rgba(0, 212, 170, 0.12);
+            color: var(--accent-primary);
+            border: 1px solid rgba(0, 212, 170, 0.25);
+        }
+
+        .badge-active::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent-primary);
+            animation: pulse-dot 2s infinite;
+        }
+
+        @keyframes pulse-dot {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.4;
+            }
+        }
+
+        .badge-revoked {
+            background: rgba(239, 68, 68, 0.12);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.25);
+        }
+
+        .date-text {
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        .req-count {
+            font-weight: 700;
+            color: var(--text-primary);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 24px;
+            color: var(--text-muted);
+        }
+
+        .empty-state svg {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 16px;
+            opacity: 0.3;
+        }
+
+        .empty-state h3 {
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+        }
+
+        /* Key created modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border-primary);
+            border-radius: 20px;
+            width: 560px;
+            max-width: 90vw;
+            padding: 32px;
+            animation: slideUp 0.3s ease;
+            box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal h2 {
+            font-size: 20px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal p.warn {
+            color: var(--status-warning);
+            font-size: 13px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .key-display {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: 12px;
+            padding: 16px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 14px;
+            color: var(--accent-primary);
+            word-break: break-all;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .key-display .copy-icon {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 6px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-primary);
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+
+        .key-display .copy-icon:hover {
+            color: var(--accent-primary);
+            border-color: var(--accent-primary);
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        /* Usage panel (slide-in) */
+        .usage-panel {
+            position: fixed;
+            top: 64px;
+            right: -500px;
+            bottom: 0;
+            width: 480px;
+            background: var(--bg-card);
+            border-left: 1px solid var(--border-primary);
+            z-index: 150;
+            transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+            box-shadow: -16px 0 48px rgba(0, 0, 0, 0.3);
+        }
+
+        .usage-panel.open {
+            right: 0;
+        }
+
+        .usage-panel-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-primary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            background: var(--bg-card);
+            z-index: 10;
+        }
+
+        .usage-panel-header h3 {
+            font-size: 16px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .close-btn:hover {
+            color: var(--text-primary);
+            background: var(--bg-secondary);
+        }
+
+        .usage-content {
+            padding: 24px;
+        }
+
+        .usage-section {
+            margin-bottom: 28px;
+        }
+
+        .usage-section-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        /* Bar chart */
+        .chart-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .chart-bars {
+            display: flex;
+            align-items: flex-end;
+            gap: 4px;
+            height: 120px;
+        }
+
+        .chart-bar-wrap {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100%;
+            justify-content: flex-end;
+        }
+
+        .chart-bar {
+            width: 100%;
+            min-height: 4px;
+            background: linear-gradient(180deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 4px 4px 0 0;
+            transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .chart-bar:hover {
+            filter: brightness(1.2);
+        }
+
+        .chart-bar .tooltip {
+            position: absolute;
+            top: -28px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-primary);
+            border: 1px solid var(--border-primary);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+        }
+
+        .chart-bar:hover .tooltip {
+            opacity: 1;
+        }
+
+        .chart-label {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        /* Endpoint breakdown */
+        .endpoint-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(30, 58, 95, 0.3);
+        }
+
+        .endpoint-path {
+            font-family: 'Monaco', monospace;
+            font-size: 12px;
+            color: var(--accent-primary);
+        }
+
+        .endpoint-count {
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        /* Recent logs */
+        .log-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(30, 58, 95, 0.3);
+            font-size: 13px;
+        }
+
+        .log-method {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            min-width: 44px;
+            text-align: center;
+        }
+
+        .log-method.GET {
+            background: rgba(96, 165, 250, 0.15);
+            color: var(--blue);
+        }
+
+        .log-method.POST {
+            background: rgba(0, 212, 170, 0.15);
+            color: var(--accent-primary);
+        }
+
+        .log-method.DELETE {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+        }
+
+        .log-method.PUT {
+            background: rgba(251, 191, 36, 0.15);
+            color: var(--status-warning);
+        }
+
+        .log-endpoint {
+            flex: 1;
+            color: var(--text-secondary);
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        .log-status {
+            font-weight: 600;
+        }
+
+        .log-status.s2xx {
+            color: var(--accent-primary);
+        }
+
+        .log-status.s4xx {
+            color: var(--status-warning);
+        }
+
+        .log-status.s5xx {
+            color: var(--danger);
+        }
+
+        .log-time {
+            color: var(--text-muted);
+            font-size: 11px;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 300;
+            animation: slideInRight 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+        }
+
+        .toast.success {
+            background: rgba(0, 212, 170, 0.15);
+            border: 1px solid var(--accent-primary);
+            color: var(--accent-primary);
+        }
+
+        .toast.error {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid var(--danger);
+            color: var(--danger);
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .usage-panel {
+                width: 100%;
+                right: -100%;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .main {
+                padding: 16px;
+            }
+        }
+
+        /* Overlay for usage panel */
+        .panel-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 149;
+            display: none;
+        }
+
+        .panel-backdrop.active {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <div class="header-left">
+            <div class="logo">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                </svg>
+            </div>
+            <div class="header-title">
+                <h1>API Key Management</h1>
+                <span class="subtitle">Fair Dispatch System</span>
+            </div>
+        </div>
+        <div class="header-right">
+            <a href="/demo/allocate" class="btn btn-secondary btn-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+                </svg>
+                API Demo
+            </a>
+            <a href="/" class="btn btn-secondary btn-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+                Dashboard
+            </a>
+        </div>
+    </header>
+
+    <main class="main">
+        <!-- Stats Row -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Keys</div>
+                <div class="stat-value muted" id="stat-total">—</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Active Keys</div>
+                <div class="stat-value muted" id="stat-active">—</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Requests</div>
+                <div class="stat-value muted" id="stat-requests">—</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Last 24h</div>
+                <div class="stat-value muted" id="stat-24h">—</div>
+            </div>
+        </div>
+
+        <!-- Keys Card -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                    </svg>
+                    API Keys
+                </span>
+                <button class="btn btn-primary btn-sm" onclick="showGenerateRow()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Generate Key
+                </button>
+            </div>
+            <div id="generate-row" class="generate-section" style="display:none;">
+                <input type="text" id="key-name-input"
+                    placeholder="Enter a name for this key (e.g. Production, Mobile App)" maxlength="100" />
+                <button class="btn btn-primary btn-sm" onclick="generateKey()">Create</button>
+                <button class="btn btn-secondary btn-sm" onclick="hideGenerateRow()">Cancel</button>
+            </div>
+            <div class="card-body">
+                <div id="keys-empty" class="empty-state" style="display:none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                    </svg>
+                    <h3>No API keys yet</h3>
+                    <p>Generate your first API key to get started</p>
+                </div>
+                <table class="keys-table" id="keys-table" style="display:none;">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Key</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Last Used</th>
+                            <th>Requests</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="keys-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Key Created Modal -->
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal">
+            <h2>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"
+                    stroke="var(--accent-primary)">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                API Key Created
+            </h2>
+            <p class="warn">⚠️ Copy this key now. It will not be shown again.</p>
+            <div class="key-display">
+                <span id="modal-key-value"></span>
+                <span class="copy-icon" onclick="copyModalKey()" title="Copy to clipboard">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                </span>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="closeModal()">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Usage Side Panel -->
+    <div class="panel-backdrop" id="panel-backdrop" onclick="closeUsagePanel()"></div>
+    <div class="usage-panel" id="usage-panel">
+        <div class="usage-panel-header">
+            <h3 id="usage-panel-title">Usage Details</h3>
+            <button class="close-btn" onclick="closeUsagePanel()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <div class="usage-content" id="usage-content">
+            <p style="color: var(--text-muted); text-align: center; padding: 40px 0;">Loading...</p>
+        </div>
+    </div>
+
+    <script>
+        const API = '/api/v1/api-keys';
+
+        // ─── Init ────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+            loadStats();
+            loadKeys();
+        });
+
+        // ─── Toast ───────────────────────────────────────────
+        function toast(msg, type = 'success') {
+            const el = document.createElement('div');
+            el.className = `toast ${type}`;
+            el.textContent = msg;
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 3000);
+        }
+
+        // ─── Load Stats ─────────────────────────────────────
+        async function loadStats() {
+            try {
+                const r = await fetch(`${API}/stats`);
+                const d = await r.json();
+                setStatValue('stat-total', d.total_keys);
+                setStatValue('stat-active', d.active_keys);
+                setStatValue('stat-requests', formatNum(d.total_requests_all));
+                setStatValue('stat-24h', formatNum(d.requests_last_24h));
+            } catch (e) {
+                console.error('Stats load failed', e);
+            }
+        }
+
+        function setStatValue(id, val) {
+            const el = document.getElementById(id);
+            el.textContent = val;
+            el.classList.remove('muted');
+        }
+
+        function formatNum(n) {
+            if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+            if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+            return n.toString();
+        }
+
+        // ─── Load Keys ──────────────────────────────────────
+        async function loadKeys() {
+            try {
+                const r = await fetch(API);
+                const d = await r.json();
+                renderKeys(d.keys);
+            } catch (e) {
+                console.error('Keys load failed', e);
+            }
+        }
+
+        function renderKeys(keys) {
+            const tbody = document.getElementById('keys-tbody');
+            const table = document.getElementById('keys-table');
+            const empty = document.getElementById('keys-empty');
+            if (!keys.length) {
+                table.style.display = 'none';
+                empty.style.display = 'block';
+                return;
+            }
+            table.style.display = 'table';
+            empty.style.display = 'none';
+            tbody.innerHTML = keys.map(k => `
+                <tr onclick="openUsage('${k.id}')">
+                    <td><span class="key-name">${esc(k.name)}</span></td>
+                    <td><span class="key-prefix">${esc(k.key_prefix)}••••••</span></td>
+                    <td>${k.is_active
+                    ? '<span class="badge badge-active">Active</span>'
+                    : '<span class="badge badge-revoked">Revoked</span>'}</td>
+                    <td><span class="date-text">${fmtDate(k.created_at)}</span></td>
+                    <td><span class="date-text">${k.last_used_at ? fmtDate(k.last_used_at) : '—'}</span></td>
+                    <td><span class="req-count">${formatNum(k.total_requests)}</span></td>
+                    <td>
+                        ${k.is_active
+                    ? `<button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); revokeKey('${k.id}', '${esc(k.name)}')">Revoke</button>`
+                    : '<span class="date-text">—</span>'}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+        function fmtDate(iso) {
+            if (!iso) return '—';
+            const d = new Date(iso);
+            return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+
+        // ─── Generate Key ───────────────────────────────────
+        function showGenerateRow() {
+            document.getElementById('generate-row').style.display = 'flex';
+            document.getElementById('key-name-input').focus();
+        }
+        function hideGenerateRow() {
+            document.getElementById('generate-row').style.display = 'none';
+            document.getElementById('key-name-input').value = '';
+        }
+
+        async function generateKey() {
+            const name = document.getElementById('key-name-input').value.trim();
+            if (!name) { toast('Please enter a name', 'error'); return; }
+            try {
+                const r = await fetch(API, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name }),
+                });
+                if (!r.ok) { toast('Failed to create key', 'error'); return; }
+                const d = await r.json();
+                hideGenerateRow();
+                // Show modal with key
+                document.getElementById('modal-key-value').textContent = d.key;
+                document.getElementById('modal-overlay').classList.add('active');
+                loadStats();
+                loadKeys();
+                toast('API key created successfully');
+            } catch (e) {
+                toast('Network error', 'error');
+            }
+        }
+
+        function copyModalKey() {
+            const key = document.getElementById('modal-key-value').textContent;
+            navigator.clipboard.writeText(key).then(() => toast('Key copied to clipboard!'));
+        }
+
+        function closeModal() {
+            document.getElementById('modal-overlay').classList.remove('active');
+        }
+
+        // ─── Revoke Key ─────────────────────────────────────
+        async function revokeKey(id, name) {
+            if (!confirm(`Revoke API key "${name}"? This cannot be undone.`)) return;
+            try {
+                const r = await fetch(`${API}/${id}`, { method: 'DELETE' });
+                if (!r.ok) { toast('Failed to revoke key', 'error'); return; }
+                toast('Key revoked');
+                loadStats();
+                loadKeys();
+            } catch (e) {
+                toast('Network error', 'error');
+            }
+        }
+
+        // ─── Usage Panel ────────────────────────────────────
+        async function openUsage(keyId) {
+            const panel = document.getElementById('usage-panel');
+            const backdrop = document.getElementById('panel-backdrop');
+            const content = document.getElementById('usage-content');
+            content.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 40px 0;">Loading usage data...</p>';
+            panel.classList.add('open');
+            backdrop.classList.add('active');
+
+            try {
+                const r = await fetch(`${API}/${keyId}/usage?days=7`);
+                const d = await r.json();
+                document.getElementById('usage-panel-title').textContent = d.key_name;
+                content.innerHTML = buildUsageHTML(d);
+            } catch (e) {
+                content.innerHTML = '<p style="color: var(--danger); text-align: center; padding: 40px;">Failed to load usage data</p>';
+            }
+        }
+
+        function closeUsagePanel() {
+            document.getElementById('usage-panel').classList.remove('open');
+            document.getElementById('panel-backdrop').classList.remove('active');
+        }
+
+        function buildUsageHTML(d) {
+            // Summary
+            let html = `
+                <div class="usage-section">
+                    <div class="usage-section-title">Overview</div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                        <div style="background:var(--bg-secondary);border-radius:10px;padding:14px;">
+                            <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">TOTAL REQUESTS</div>
+                            <div style="font-size:22px;font-weight:700;color:var(--accent-primary);">${formatNum(d.total_requests)}</div>
+                        </div>
+                        <div style="background:var(--bg-secondary);border-radius:10px;padding:14px;">
+                            <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">ALLOCATIONS</div>
+                            <div style="font-size:22px;font-weight:700;color:var(--purple);">${formatNum(d.total_allocations)}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Bar chart
+            const daily = d.daily_usage || [];
+            const maxCount = Math.max(1, ...daily.map(x => x.count));
+            html += `
+                <div class="usage-section">
+                    <div class="usage-section-title">Requests — Last 7 Days</div>
+                    <div class="chart-container">
+                        <div class="chart-bars">
+                            ${daily.map(day => {
+                const pct = (day.count / maxCount) * 100;
+                const label = day.date.slice(5); // MM-DD
+                return `
+                                    <div class="chart-bar-wrap">
+                                        <div class="chart-bar" style="height:${Math.max(4, pct)}%">
+                                            <span class="tooltip">${day.count} req</span>
+                                        </div>
+                                        <span class="chart-label">${label}</span>
+                                    </div>
+                                `;
+            }).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Endpoint breakdown
+            const endpoints = d.endpoint_breakdown || [];
+            if (endpoints.length) {
+                html += `
+                    <div class="usage-section">
+                        <div class="usage-section-title">Endpoint Breakdown</div>
+                        ${endpoints.map(ep => `
+                            <div class="endpoint-item">
+                                <span class="endpoint-path">${esc(ep.endpoint)}</span>
+                                <span class="endpoint-count">${ep.count}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            // Recent logs
+            const logs = d.recent_logs || [];
+            if (logs.length) {
+                html += `
+                    <div class="usage-section">
+                        <div class="usage-section-title">Recent Requests</div>
+                        ${logs.map(log => {
+                    const sc = log.status_code;
+                    const scClass = sc < 300 ? 's2xx' : sc < 500 ? 's4xx' : 's5xx';
+                    const time = new Date(log.timestamp).toLocaleTimeString();
+                    return `
+                                <div class="log-item">
+                                    <span class="log-method ${log.method}">${log.method}</span>
+                                    <span class="log-endpoint">${esc(log.endpoint)}</span>
+                                    <span class="log-status ${scClass}">${sc}</span>
+                                    <span class="log-time">${time}</span>
+                                </div>
+                            `;
+                }).join('')}
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="usage-section">
+                        <div class="usage-section-title">Recent Requests</div>
+                        <p style="color:var(--text-muted);font-size:13px;">No requests recorded yet</p>
+                    </div>
+                `;
+            }
+
+            return html;
+        }
+
+        // Enter key support
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && document.getElementById('generate-row').style.display !== 'none') {
+                generateKey();
+            }
+            if (e.key === 'Escape') {
+                closeModal();
+                closeUsagePanel();
+            }
+        });
+    </script>
+</body>
+
+</html>

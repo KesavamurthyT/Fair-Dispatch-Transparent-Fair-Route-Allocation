@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Agent Supervision | Fair Dispatch System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Leaflet.js for maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <style>
+        /* ============================================
+           CSS Variables & Reset
+           ============================================ */
+        :root {
+            --bg-primary: #0a0f1a;
+            --bg-secondary: #0d1929;
+            --bg-card: #0f1e2e;
+            --bg-card-hover: #142639;
+            --accent-primary: #00d4aa;
+            --accent-secondary: #00b894;
+            --accent-glow: rgba(0, 212, 170, 0.4);
+            --accent-blue: #3b82f6;
+            --accent-yellow: #fbbf24;
+            --text-primary: #ffffff;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border-primary: #1e3a5f;
+            --status-active: #00d4aa;
+            --status-processing: #fbbf24;
+            --status-idle: #64748b;
+            --status-error: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0f1a;
+            color: #ffffff;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ============================================
+           Header
+           ============================================ */
+        .header {
+            height: 60px;
+            background: #0d1929;
+            border-bottom: 1px solid #1e3a5f;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 16px;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: #0d2137;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .header-title h1 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ffffff;
+            line-height: 1.2;
+            margin: 0;
+        }
+
+        .header-title .subtitle {
+            font-size: 12px;
+            color: #64748b;
+            display: block;
+        }
+
+        .header-center {
+            display: flex;
+            flex-direction: row;
+            gap: 12px;
+        }
+
+        .header-right {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 16px;
+            flex-shrink: 0;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid #1e3a5f;
+            background: #0f1e2e;
+            color: #94a3b8;
+            transition: all 0.15s ease;
+        }
+
+        .btn:hover {
+            background: #142639;
+            color: #ffffff;
+            border-color: #00d4aa;
+        }
+
+        .btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Status Indicators */
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #00d4aa;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #00d4aa;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.5;
+                transform: scale(1.2);
+            }
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: #0f1e2e;
+            border: 1px solid #1e3a5f;
+            border-radius: 20px;
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        .status-badge svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .status-badge.processing svg {
+            color: #fbbf24;
+            animation: spin 2s linear infinite;
+        }
+
+        .status-badge.data-flows svg {
+            color: #00d4aa;
+        }
+
+        .status-badge.agents svg {
+            color: #3b82f6;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ============================================
+           Canvas Container
+           ============================================ */
+        .canvas-container {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            right: 0;
+            bottom: 40px;
+            overflow: hidden;
+            background: radial-gradient(ellipse at center, rgba(0, 212, 170, 0.03) 0%, transparent 70%), #0a0f1a;
+        }
+
+        .connections-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .nodes-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+        }
+
+        /* ============================================
+           Agent Node Styles
+           ============================================ */
+        .agent-node {
+            position: absolute;
+            background: #0f1e2e;
+            border: 1px solid #1e3a5f;
+            border-radius: 12px;
+            padding: 16px 20px;
+            min-width: 180px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+
+        .agent-node:hover {
+            background: #142639;
+            border-color: #00d4aa;
+            box-shadow: 0 0 30px rgba(0, 212, 170, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .agent-node.orchestrator {
+            border-color: #00d4aa;
+            box-shadow: 0 0 20px rgba(0, 212, 170, 0.4);
+            min-width: 260px;
+        }
+
+        .agent-node.dragging {
+            opacity: 0.8;
+            cursor: grabbing;
+            z-index: 1000;
+        }
+
+        .agent-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #00d4aa 0%, #00b894 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 12px;
+        }
+
+        .agent-icon svg {
+            width: 20px;
+            height: 20px;
+            color: #0a0f1a;
+        }
+
+        .agent-node.database .agent-icon {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        }
+
+        .agent-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 4px;
+        }
+
+        .agent-description {
+            font-size: 11px;
+            color: #64748b;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .agent-footer {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #1e3a5f;
+        }
+
+        .agent-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .agent-status.active {
+            color: #00d4aa;
+        }
+
+        .agent-status.processing {
+            color: #fbbf24;
+        }
+
+        .agent-status.idle {
+            color: #64748b;
+        }
+
+        .agent-status .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .agent-status.active .dot {
+            animation: statusPulse 1.5s ease-in-out infinite;
+            box-shadow: 0 0 8px currentColor;
+        }
+
+        .agent-status.processing .dot {
+            animation: processingPulse 0.8s ease-in-out infinite;
+        }
+
+        @keyframes statusPulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.6;
+                transform: scale(1.3);
+            }
+        }
+
+        @keyframes processingPulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
+        }
+
+        /* Node card pulse effects */
+        .node-active-pulse {
+            box-shadow: 0 4px 16px rgba(0, 212, 170, 0.3),
+                0 0 0 2px rgba(0, 212, 170, 0.2);
+            border-color: rgba(0, 212, 170, 0.4) !important;
+        }
+
+        .node-processing-pulse {
+            animation: nodeProcessingPulse 1.5s ease-in-out infinite;
+            border-color: rgba(251, 191, 36, 0.4) !important;
+        }
+
+        @keyframes nodeProcessingPulse {
+
+            0%,
+            100% {
+                box-shadow: 0 4px 16px rgba(251, 191, 36, 0.2);
+            }
+
+            50% {
+                box-shadow: 0 4px 24px rgba(251, 191, 36, 0.4);
+            }
+        }
+
+
+        .agent-meta {
+            font-size: 11px;
+            color: #64748b;
+        }
+
+        .processing-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            background: rgba(251, 191, 36, 0.15);
+            border: 1px solid #fbbf24;
+            border-radius: 4px;
+            font-size: 10px;
+            color: #fbbf24;
+            margin-left: auto;
+        }
+
+        /* ============================================
+           Connection Lines
+           ============================================ */
+        .connection-line {
+            fill: none;
+            stroke: #00d4aa;
+            stroke-width: 2;
+            filter: url(#glow);
+            pointer-events: stroke;
+            cursor: pointer;
+        }
+
+        .connection-line:hover {
+            stroke-width: 3;
+        }
+
+        .connection-line-animated {
+            fill: none;
+            stroke: #00d4aa;
+            stroke-width: 2;
+            stroke-dasharray: 8, 4;
+            animation: flow 1s linear infinite;
+            filter: url(#glow);
+        }
+
+        @keyframes flow {
+            from {
+                stroke-dashoffset: 12;
+            }
+
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        /* ============================================
+           Zoom Controls & Minimap
+           ============================================ */
+        .zoom-controls {
+            position: absolute;
+            bottom: 80px;
+            left: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            z-index: 50;
+        }
+
+        .zoom-btn {
+            width: 32px;
+            height: 32px;
+            background: #0f1e2e;
+            border: 1px solid #1e3a5f;
+            border-radius: 6px;
+            color: #94a3b8;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .zoom-btn:hover {
+            background: #142639;
+            border-color: #00d4aa;
+            color: #ffffff;
+        }
+
+        .minimap {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 180px;
+            height: 120px;
+            background: #0d1929;
+            border: 1px solid #1e3a5f;
+            border-radius: 8px;
+            overflow: hidden;
+            z-index: 50;
+        }
+
+        .minimap-viewport {
+            position: absolute;
+            border: 2px solid #00d4aa;
+            background: rgba(0, 212, 170, 0.1);
+            border-radius: 4px;
+        }
+
+        .minimap-node {
+            position: absolute;
+            background: #00d4aa;
+            border-radius: 2px;
+        }
+
+        /* ============================================
+           Footer
+           ============================================ */
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: #0d1929;
+            border-top: 1px solid #1e3a5f;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 0 24px;
+            z-index: 100;
+        }
+
+        .instruction {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .instruction .highlight {
+            color: #00d4aa;
+            font-weight: 500;
+        }
+
+        .separator {
+            color: #64748b;
+            opacity: 0.5;
+        }
+
+        /* ============================================
+           Modals
+           ============================================ */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #0d1929;
+            border: 1px solid #1e3a5f;
+            border-radius: 12px;
+            max-width: 700px;
+            width: 90%;
+            max-height: 80vh;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content.terminal {
+            background: #0d0d0d;
+        }
+
+        .terminal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: #1a1a1a;
+            border-bottom: 1px solid #333;
+        }
+
+        .terminal-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: #94a3b8;
+        }
+
+        .terminal-body {
+            padding: 16px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .terminal-body pre {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 12px;
+            line-height: 1.6;
+            color: #00d4aa;
+            white-space: pre-wrap;
+            word-break: break-all;
+            margin: 0;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            border-bottom: 1px solid #1e3a5f;
+        }
+
+        .modal-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .modal-body {
+            padding: 20px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .modal-body pre {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 12px;
+            line-height: 1.6;
+            color: #ffffff;
+            background: #0f1e2e;
+            padding: 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 0;
+        }
+
+        .close-btn {
+            width: 28px;
+            height: 28px;
+            background: none;
+            border: none;
+            color: #64748b;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+        }
+
+        .close-btn:hover {
+            background: #0f1e2e;
+            color: #ffffff;
+        }
+
+        /* ============================================
+           Responsive
+           ============================================ */
+        @media (max-width: 1200px) {
+            .header-center {
+                display: none;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .status-badge {
+                display: none;
+            }
+
+            .agent-node {
+                min-width: 150px;
+                padding: 12px 16px;
+            }
+        }
+
+        /* Toast Animation */
+        @keyframes fadeInOut {
+            0% {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+
+            20% {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+
+            80% {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-20px);
+            }
+        }
+
+        /* Map Container */
+        .map-wrapper {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            right: 0;
+            bottom: 40px;
+            z-index: 10;
+            transform: translateX(100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            background: linear-gradient(135deg, #0a0f1a 0%, #0d1929 100%);
+        }
+
+        .map-wrapper.active {
+            transform: translateX(0);
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+            border-radius: 0;
+        }
+
+        /* Leaflet overrides for dark theme */
+        .leaflet-container {
+            background: #0a0f1a !important;
+            font-family: 'Inter', sans-serif !important;
+        }
+
+        .leaflet-popup-content-wrapper {
+            background: rgba(15, 30, 46, 0.98) !important;
+            border-radius: 12px !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            backdrop-filter: blur(10px);
+        }
+
+        .leaflet-popup-content {
+            margin: 0 !important;
+            color: #fff !important;
+        }
+
+        .leaflet-popup-tip {
+            background: rgba(15, 30, 46, 0.98) !important;
+        }
+
+        .leaflet-control-zoom {
+            border: none !important;
+            border-radius: 12px !important;
+            overflow: hidden;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        .leaflet-control-zoom a {
+            background: rgba(15, 30, 46, 0.95) !important;
+            color: #fff !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+        }
+
+        .leaflet-control-zoom a:hover {
+            background: rgba(0, 212, 170, 0.2) !important;
+            color: #00d4aa !important;
+        }
+
+        /* Pulse animation for warehouse marker */
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+
+            50% {
+                transform: scale(1.3);
+                opacity: 0.4;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+        }
+
+        /* Glow effect for markers */
+        @keyframes glow {
+
+            0%,
+            100% {
+                box-shadow: 0 0 10px rgba(0, 212, 170, 0.6);
+            }
+
+            50% {
+                box-shadow: 0 0 20px rgba(0, 212, 170, 0.9);
+            }
+        }
+
+        /* Date Picker */
+        .date-picker-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .date-input {
+            background: #0f1e2e;
+            border: 1px solid #1e3a5f;
+            color: #94a3b8;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .date-input:hover,
+        .date-input:focus {
+            border-color: #00d4aa;
+            color: #ffffff;
+        }
+
+        /* Toggle Switch */
+        .view-toggle {
+            display: flex;
+            background: #0f1e2e;
+            border: 1px solid #1e3a5f;
+            border-radius: 6px;
+            padding: 2px;
+            margin-left: 12px;
+        }
+
+        .toggle-btn {
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #64748b;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .toggle-btn.active {
+            background: #1e3a5f;
+            color: #00d4aa;
+        }
+
+        /* Leaflet Overrides for Dark Mode */
+        .leaflet-container {
+            background: #0a0f1a !important;
+        }
+
+        .leaflet-popup-content-wrapper,
+        .leaflet-popup-tip {
+            background: #0f1e2e !important;
+            color: #fff !important;
+            border: 1px solid #1e3a5f;
+        }
+    </style>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <div class="logo">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#00d4aa" stroke-width="2">
+                    <circle cx="12" cy="12" r="6" />
+                    <line x1="6" y1="12" x2="18" y2="12" />
+                    <line x1="12" y1="6" x2="12" y2="18" />
+                </svg>
+            </div>
+            <div class="header-title">
+                <h1>Live Agent Supervision</h1>
+                <span class="subtitle">Agentic AI Workflow Visualization</span>
+            </div>
+        </div>
+        <div class="header-center">
+            <div class="date-picker-container">
+                <input type="date" class="date-input" id="historyDate">
+            </div>
+
+            <div class="view-toggle">
+                <button class="toggle-btn active" id="graphViewBtn">
+                    <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14">
+                        <path d="M2.5 13.5V6.5h2v7zm4 0v-9h2v9zm4 0v-5h2v5z" />
+                    </svg>
+                    Graph
+                </button>
+                <button class="toggle-btn" id="mapViewBtn">
+                    <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14">
+                        <path
+                            d="M8 0a6 6 0 00-6 6c0 4.5 6 10 6 10s6-5.5 6-10a6 6 0 00-6-6zm0 8a2 2 0 110-4 2 2 0 010 4z" />
+                    </svg>
+                    Map
+                </button>
+            </div>
+
+            <button class="btn" id="saveLayoutBtn">
+                <svg viewBox="0 0 16 16" fill="currentColor">
+                    <path
+                        d="M2 2h9l3 3v9a1 1 0 01-1 1H2a1 1 0 01-1-1V3a1 1 0 011-1zm8 1v3h2V3.5L10.5 2H10v1zm-5 8a2 2 0 114 0 2 2 0 01-4 0z" />
+                </svg>
+                Save Layout
+            </button>
+            <button class="btn" id="resetBtn">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <circle cx="8" cy="8" r="6" />
+                    <path d="M8 4v4l2.5 1.5" />
+                </svg>
+                Reset
+            </button>
+            <button class="btn" id="startAllocationBtn" style="color: #00d4aa; border-color: rgba(0, 212, 170, 0.3);">
+                <svg viewBox="0 0 16 16" fill="currentColor">
+                    <path
+                        d="M4 3.5C4 2.67157 4.67157 2 5.5 2C5.83481 2 6.15179 2.11202 6.41074 2.31607L12.9107 7.31607C13.5654 7.83187 13.6656 8.78453 13.1498 9.43926C13.0782 9.53018 12.9984 9.6133 12.9107 9.68393L6.41074 14.6839C5.756 15.1997 4.80335 15.0995 4.28755 14.4448C4.09556 14.2012 3.99656 13.8996 4 13.5891L4 3.5Z" />
+                </svg>
+                Start Allocation
+            </button>
+        </div>
+        <div class="header-right">
+            <div class="status-indicator">
+                <span class="status-dot"></span>
+                <span id="liveStatus">Live</span>
+            </div>
+            <div class="status-badge processing">
+                <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M7 1v2M7 11v2M1 7h2M11 7h2" />
+                </svg>
+                <span id="processingCount">1</span> Processing
+            </div>
+            <div class="status-badge data-flows">
+                <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M2 7h10M8 3l4 4-4 4" />
+                </svg>
+                <span id="dataFlowCount">6</span> Data Flows
+            </div>
+            <div class="status-badge agents">
+                <svg viewBox="0 0 14 14" fill="currentColor">
+                    <rect x="2" y="2" width="4" height="4" rx="1" />
+                    <rect x="8" y="2" width="4" height="4" rx="1" />
+                    <rect x="2" y="8" width="4" height="4" rx="1" />
+                    <rect x="8" y="8" width="4" height="4" rx="1" />
+                </svg>
+                <span id="agentCount">6</span> Agents
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Canvas -->
+    <main class="canvas-container" id="canvasContainer">
+        <svg class="connections-layer" id="connectionsLayer">
+            <defs>
+                <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+                    <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+                    <feMerge>
+                        <feMergeNode in="coloredBlur" />
+                        <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                </filter>
+            </defs>
+        </svg>
+
+        <div class="map-wrapper" id="mapWrapper">
+            <div id="map"></div>
+        </div>
+
+        <div class="nodes-container" id="nodesContainer"></div>
+
+        <div class="zoom-controls">
+            <button class="zoom-btn" id="zoomIn">+</button>
+            <button class="zoom-btn" id="zoomOut">−</button>
+        </div>
+
+        <div class="minimap" id="minimap">
+            <div class="minimap-viewport" id="minimapViewport"></div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <span class="instruction"><span class="highlight">Click</span> on any node to open terminal</span>
+        <span class="separator">•</span>
+        <span class="instruction"><span class="highlight">Click</span> on edges to see data payload</span>
+        <span class="separator">•</span>
+        <span class="instruction"><span class="highlight">Drag</span> nodes to rearrange</span>
+    </footer>
+
+    <!-- Terminal Modal -->
+    <div class="modal" id="terminalModal">
+        <div class="modal-content terminal">
+            <div class="terminal-header">
+                <span class="terminal-title" id="terminalTitle">Agent Terminal</span>
+                <button class="close-btn" id="closeTerminal">&times;</button>
+            </div>
+            <div class="terminal-body" id="terminalBody">
+                <pre id="terminalOutput"></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Payload Modal -->
+    <div class="modal" id="dataModal">
+        <div class="modal-content data-viewer">
+            <div class="modal-header">
+                <span class="modal-title" id="dataTitle">Data Flow Payload</span>
+                <button class="close-btn" id="closeData">&times;</button>
+            </div>
+            <div class="modal-body">
+                <pre id="dataPayload"></pre>
+            </div>
+        </div>
+    </div>
+
+    <script src="api.js?v=2"></script>
+    <script src="app.js?v=2"></script>
+</body>
+
+</html>
