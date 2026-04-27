@@ -1,0 +1,43 @@
+# Core dependencies
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+pydantic==2.5.3
+pydantic-settings==2.1.0
+python-dotenv==1.0.0
+
+# Database
+sqlalchemy==2.0.25
+asyncpg==0.29.0
+alembic==1.13.1
+
+# Algorithms
+scikit-learn==1.4.0
+scipy==1.12.0
+numpy==1.26.3
+ortools==9.8.3296
+
+# Machine Learning (Phase 8)
+xgboost==2.0.3
+pandas==2.1.4
+
+# Worker Infrastructure (Phase 10 - Async Architecture)
+celery>=5.3.0
+redis>=5.0.0
+flower>=2.0.0
+psycopg2-binary>=2.9.0
+
+# Testing
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+aiosqlite>=0.19.0
+pytest-xdist>=3.3.0
+pytest-cov>=4.1.0
+httpx>=0.24.0
+faker>=18.0.0
+factory-boy>=3.3.0
+
+# LangGraph (Phase 9 - Workflow Orchestration)
+langgraph>=0.2.0
+langchain-core>=0.2.0
+langchain-google-genai>=1.0.0
+langsmith>=0.1.0
