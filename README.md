@@ -62,11 +62,12 @@ fairness_score = 1 - |workload - avg_workload| / max(avg_workload, 1)
 - **Route Clustering**: Groups packages using K-Means based on geographic proximity
 - **Workload Scoring**: Calculates balanced workload metrics for each route
 - **Fairness Metrics**: Computes Gini index and individual fairness scores
-- **Multi-Agent Optimization** (Phase 4.1):
-  - **ML Effort Agent**: Builds effort matrix for driver-route pairs
-  - **Route Planner Agent**: Uses OR-Tools/Hungarian for optimal assignment
-  - **Fairness Manager Agent**: Evaluates fairness and triggers re-optimization
-- **Explainability Engine**: Generates human-readable explanations for allocations
+- **Multi-Agent Optimization**:
+  - **Route Planner**: Solves optimal assignment
+  - **Fairness Manager**: Evaluates fairness and triggers re-optimization
+  - **Driver Liaison**: Represents driver preferences and constraints
+  - **Explainability**: Translates complex decisions into human-readable text
+  - **Learning**: Continuously improves algorithms from historical data
 - **Decision Logging**: Records agent workflow for audit and visualization
 
 ## Tech Stack
@@ -80,29 +81,35 @@ fairness_score = 1 - |workload - avg_workload| / max(avg_workload, 1)
 
 ## Architecture diagram
 
-The allocation pipeline uses three specialized agents:
+The allocation pipeline utilizes five specialized agents working in concert:
 
 ```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────────┐
-│  MLEffortAgent  │ → │ RoutePlannerAgent │ → │ FairnessManagerAgent│
-│  (Effort Matrix)│    │ (Proposal 1)      │    │ (Check Fairness)    │
-└─────────────────┘    └──────────────────┘    └─────────────────────┘
-                                                          ↓
-                                                   ACCEPT or REOPTIMIZE
-                                                          ↓
-                                               ┌──────────────────┐
-                                               │ RoutePlannerAgent │
-                                               │ (Proposal 2)      │
-                                               └──────────────────┘
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│Learning Agent│ ──> │Route Planner │ <── │Driver Liaison│
+└──────────────┘     └──────┬───────┘     └──────────────┘
+                            │
+                            v
+                     ┌──────────────┐
+                     │Fairness Mngr │ ──(Reoptimize)──┐
+                     └──────┬───────┘                 │
+                            │ (Accept)                │
+                            v                         │
+                     ┌──────────────┐                 │
+                     │Explainability│                 │
+                     └──────────────┘                 │
+                            ↑                         │
+                            └─────────────────────────┘
 ```
 
 ### Agents
 
 | Agent | Purpose | Key Outputs |
 |-------|---------|-------------|
-| **MLEffortAgent** | Builds effort matrix for all driver-route pairs | Effort matrix, breakdown per pair |
-| **RoutePlannerAgent** | Solves optimal assignment (OR-Tools/Hungarian) | Assignments with total effort |
-| **FairnessManagerAgent** | Evaluates Gini, std dev, max gap vs thresholds | ACCEPT or REOPTIMIZE with penalties |
+| **Route Planner** | Solves optimal assignment | Assignments with total effort |
+| **Fairness Manager** | Evaluates Gini, std dev, max gap | ACCEPT or REOPTIMIZE with penalties |
+| **Driver Liaison** | Advocates for driver preferences and status | Constraints and personalized capacity |
+| **Explainability** | Generates human-readable explanations | Allocation summaries and reasoning |
+| **Learning** | Refines matrices and predicts difficulty | Effort matrix, predictive trends |
 
 ### Decision Logging
 
